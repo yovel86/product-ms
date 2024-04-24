@@ -15,6 +15,7 @@ import java.util.List;
 public class FakeStoreProductServiceImpl implements ProductService {
 
     private final WebClient webClient;
+    private final String BASE_URL = "https://fakestoreapi.com/products";
 
     @Autowired
     public FakeStoreProductServiceImpl(WebClient webClient) {
@@ -25,7 +26,7 @@ public class FakeStoreProductServiceImpl implements ProductService {
     public Product getProductById(long productId) throws ProductNotFoundException {
         FakeStoreProductDTO productDTO = this.webClient
                                              .get()
-                                             .uri("https://fakestoreapi.com/products/" + productId)
+                                             .uri(BASE_URL + "/" + productId)
                                              .retrieve()
                                              .bodyToMono(FakeStoreProductDTO.class).block();
         if(productDTO == null) throw new ProductNotFoundException("Invalid Product ID");
@@ -36,7 +37,7 @@ public class FakeStoreProductServiceImpl implements ProductService {
     public List<Product> getAllProducts() {
         FakeStoreProductDTO[] productDTOS = this.webClient
                                                 .get()
-                                                .uri("https://fakestoreapi.com/products")
+                                                .uri(BASE_URL)
                                                 .retrieve()
                                                 .bodyToMono(FakeStoreProductDTO[].class).block();
         List<Product> products = new ArrayList<>();
