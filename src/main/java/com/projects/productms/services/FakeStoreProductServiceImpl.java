@@ -6,7 +6,7 @@ import com.projects.productms.models.Product;
 import com.projects.productms.utils.ProductUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,23 +14,31 @@ import java.util.List;
 @Service
 public class FakeStoreProductServiceImpl implements ProductService {
 
-    private RestTemplate restTemplate;
+    private final WebClient webClient;
 
     @Autowired
-    public FakeStoreProductServiceImpl(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
+    public FakeStoreProductServiceImpl(WebClient webClient) {
+        this.webClient = webClient;
     }
 
     @Override
     public Product getProductById(long productId) throws ProductNotFoundException {
-        FakeStoreProductDTO productDTO = this.restTemplate.getForObject("https://fakestoreapi.com/products/" + productId, FakeStoreProductDTO.class);
+        FakeStoreProductDTO productDTO = this.webClient
+                                             .get()
+                                             .uri("https://fakestoreapi.com/products/" + productId)
+                                             .retrieve()
+                                             .bodyToMono(FakeStoreProductDTO.class).block();
         if(productDTO == null) throw new ProductNotFoundException("Invalid Product ID");
         return ProductUtils.convertDtoToProduct(productDTO);
     }
 
     @Override
     public List<Product> getAllProducts() {
-        FakeStoreProductDTO[] productDTOS = this.restTemplate.getForObject("https://fakestoreapi.com/products", FakeStoreProductDTO[].class);
+        FakeStoreProductDTO[] productDTOS = this.webClient
+                                                .get()
+                                                .uri("https://fakestoreapi.com/products")
+                                                .retrieve()
+                                                .bodyToMono(FakeStoreProductDTO[].class).block();
         List<Product> products = new ArrayList<>();
         for(FakeStoreProductDTO dto: productDTOS) {
             products.add(ProductUtils.convertDtoToProduct(dto));
