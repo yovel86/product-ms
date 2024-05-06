@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @RestController
 @RequestMapping("/products")
 public class ProductController {
@@ -48,9 +51,10 @@ public class ProductController {
         double price = requestDTO.getPrice();
         String image = requestDTO.getImage();
         String categoryName = requestDTO.getCategoryName();
+        int availableQuantity = requestDTO.getAvailableQuantity();
         CreateProductResponseDTO responseDTO = new CreateProductResponseDTO();
         try {
-            Product product = this.productService.createProduct(title, description, price, image, categoryName);
+            Product product = this.productService.createProduct(title, description, price, image, categoryName, availableQuantity);
             responseDTO.setProduct(product);
             responseDTO.setResponseStatus(ResponseStatus.SUCCESS);
         } catch (Exception e) {
@@ -92,6 +96,22 @@ public class ProductController {
         return responseDTO;
     }
 
+    @PatchMapping("/{id}/available_quantity")
+    public UpdateQuantityResponseDTO updateAvailableQuantity(@PathVariable("id") long productId, @RequestBody UpdateQuantityRequestDTO requestDTO) {
+        int quantity = requestDTO.getQuantity();
+        UpdateQuantityResponseDTO responseDTO = new UpdateQuantityResponseDTO();
+        try {
+            Product product = this.productService.updateAvailableQuantity(productId, quantity);
+            responseDTO.setProduct(product);
+            responseDTO.setMessage("Quantity of product with ID: " + productId + ", has been UPDATED");
+            responseDTO.setResponseStatus(ResponseStatus.SUCCESS);
+        } catch (Exception e) {
+            responseDTO.setMessage(e.getMessage());
+            responseDTO.setResponseStatus(ResponseStatus.FAILURE);
+        }
+        return responseDTO;
+    }
+
     @DeleteMapping("/{id}")
     public DeleteProductResponseDTO deleteProduct(@PathVariable("id") long productId) {
         DeleteProductResponseDTO responseDTO = new DeleteProductResponseDTO();
@@ -105,6 +125,19 @@ public class ProductController {
             responseDTO.setResponseStatus(ResponseStatus.FAILURE);
         }
         return responseDTO;
+    }
+
+    @PostMapping("/details")
+    public List<Product> getProductsById(@RequestBody GetProductsByIdRequestDTO requestDTO) {
+        List<Long> productIds = requestDTO.getProductIds();
+        System.out.println(productIds);
+        List<Product> products = new ArrayList<>();
+        try {
+            products = this.productService.getProductsById(productIds);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return products;
     }
 
 }

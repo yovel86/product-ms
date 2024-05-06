@@ -9,4 +9,5 @@ public class CreateProductRequestDTO {
     private double price;
     private String image;
     private String categoryName;
+    private int availableQuantity;
 }

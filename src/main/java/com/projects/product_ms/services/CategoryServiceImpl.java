@@ -21,10 +21,10 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Category createCategory(String name) {
-        Optional<Category> categoryOptional = this.categoryRepository.findByName(name);
+        Optional<Category> categoryOptional = this.categoryRepository.findByNameIgnoreCase(name);
         if(categoryOptional.isEmpty()) {
             Category category = new Category();
-            category.setName(name);
+            category.setName(name.toUpperCase());
             return this.categoryRepository.save(category);
         }
         return categoryOptional.get();

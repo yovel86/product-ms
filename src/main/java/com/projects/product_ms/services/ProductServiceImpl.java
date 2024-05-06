@@ -33,12 +33,13 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product createProduct(String title, String description, double price, String image, String categoryName) {
+    public Product createProduct(String title, String description, double price, String image, String categoryName, int availableQuantity) {
         Product product = new Product();
         product.setTitle(title);
         product.setDescription(description);
         product.setPrice(price);
         product.setImage(image);
+        product.setAvailableQuantity(availableQuantity);
         Category category = this.categoryService.createCategory(categoryName);
         product.setCategory(category);
         return this.productRepository.save(product);
@@ -59,6 +60,13 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public Product updateAvailableQuantity(long productId, int updatedQuantity) throws ProductNotFoundException {
+        Product product = getProduct(productId);
+        product.setAvailableQuantity(updatedQuantity);
+        return this.productRepository.save(product);
+    }
+
+    @Override
     public void deleteProduct(long productId) throws ProductNotFoundException {
         Product product = getProduct(productId);
         this.productRepository.delete(product);
@@ -68,6 +76,11 @@ public class ProductServiceImpl implements ProductService {
         Optional<Product> productOptional = this.productRepository.findById(productId);
         if(productOptional.isEmpty()) throw new ProductNotFoundException("Invalid Product ID");
         return productOptional.get();
+    }
+
+    @Override
+    public List<Product> getProductsById(List<Long> productIds) {
+        return this.productRepository.findByIdIn(productIds);
     }
 
 }
