@@ -75,4 +75,8 @@ public class FakeStoreProductServiceImpl implements ProductService {
         return null;
     }
 
+    @Override
+    public List<Product> getTrendingProducts() {
+        return null;
+    }
 }

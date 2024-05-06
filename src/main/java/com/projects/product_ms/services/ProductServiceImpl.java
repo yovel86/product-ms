@@ -6,6 +6,7 @@ import com.projects.product_ms.models.Product;
 import com.projects.product_ms.repositories.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,11 +16,14 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository  productRepository;
     private final CategoryService categoryService;
+    private final WebClient webClient;
+    private final String BASE_URL = "http://localhost:8081/orders";
 
     @Autowired
-    public ProductServiceImpl(ProductRepository productRepository, CategoryService categoryService) {
+    public ProductServiceImpl(ProductRepository productRepository, CategoryService categoryService, WebClient webClient) {
         this.productRepository = productRepository;
         this.categoryService = categoryService;
+        this.webClient = webClient;
     }
 
     @Override
@@ -81,6 +85,22 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<Product> getProductsById(List<Long> productIds) {
         return this.productRepository.findByIdIn(productIds);
+    }
+
+    @Override
+    public List<Product> getTrendingProducts() {
+        List<Long> trendingProductIds = getTrendingProductIds();
+        return this.productRepository.findByIdIn(trendingProductIds);
+    }
+
+    private List<Long> getTrendingProductIds() {
+        return this.webClient
+                .get()
+                .uri(BASE_URL + "/trending")
+                .retrieve()
+                .bodyToFlux(Long.class)
+                .collectList()
+                .block();
     }
 
 }

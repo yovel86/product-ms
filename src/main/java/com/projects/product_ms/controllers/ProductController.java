@@ -140,4 +140,10 @@ public class ProductController {
         return products;
     }
 
+    @GetMapping("/trending")
+    public List<Product> getTrendingProducts() {
+        return this.productService.getTrendingProducts();
+    }
+
+
 }

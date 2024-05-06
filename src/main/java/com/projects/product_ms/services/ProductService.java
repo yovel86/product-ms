@@ -3,6 +3,7 @@ package com.projects.product_ms.services;
 import com.projects.product_ms.exceptions.ProductNotFoundException;
 import com.projects.product_ms.models.Product;
 
+import javax.swing.*;
 import java.util.List;
 
 public interface ProductService {
@@ -22,5 +23,7 @@ public interface ProductService {
     void deleteProduct(long productId) throws ProductNotFoundException;
 
     List<Product> getProductsById(List<Long> productIds) throws ProductNotFoundException;
+
+    List<Product> getTrendingProducts();
 
 }
