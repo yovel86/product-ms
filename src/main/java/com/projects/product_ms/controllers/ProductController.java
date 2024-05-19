@@ -1,11 +1,15 @@
 package com.projects.product_ms.controllers;
 
+import com.projects.product_ms.components.AuthUtils;
 import com.projects.product_ms.dtos.ResponseStatus;
 import com.projects.product_ms.dtos.product.*;
 import com.projects.product_ms.models.Product;
 import com.projects.product_ms.services.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.configurationprocessor.json.JSONException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -16,10 +20,12 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
+    private final AuthUtils authUtils;
 
     @Autowired
-    public ProductController(@Qualifier("productService") ProductService productService) {
+    public ProductController(@Qualifier("productService") ProductService productService, AuthUtils authUtils) {
         this.productService = productService;
+        this.authUtils = authUtils;
     }
 
     @GetMapping
@@ -45,23 +51,24 @@ public class ProductController {
     }
 
     @PostMapping
-    public CreateProductResponseDTO createProduct(@RequestBody CreateProductRequestDTO requestDTO) {
-        String title = requestDTO.getTitle();
-        String description = requestDTO.getDescription();
-        double price = requestDTO.getPrice();
-        String image = requestDTO.getImage();
-        String categoryName = requestDTO.getCategoryName();
-        int availableQuantity = requestDTO.getAvailableQuantity();
-        CreateProductResponseDTO responseDTO = new CreateProductResponseDTO();
+    public ResponseEntity<Product> createProduct(@RequestBody CreateProductRequestDTO requestDTO, @RequestHeader("Auth") String token) {
         try {
-            Product product = this.productService.createProduct(title, description, price, image, categoryName, availableQuantity);
-            responseDTO.setProduct(product);
-            responseDTO.setResponseStatus(ResponseStatus.SUCCESS);
+            if(!authUtils.validateToken(token)) {
+                return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+            }
         } catch (Exception e) {
-            responseDTO.setMessage(e.getMessage());
-            responseDTO.setResponseStatus(ResponseStatus.FAILURE);
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
-        return responseDTO;
+        Product product = this.productService.createProduct(
+                requestDTO.getTitle(),
+                requestDTO.getDescription(),
+                requestDTO.getPrice(),
+                requestDTO.getImage(),
+                requestDTO.getCategoryName(),
+                requestDTO.getAvailableQuantity()
+        );
+        return new ResponseEntity<>(product, HttpStatus.CREATED);
     }
 
     @PatchMapping("/{id}/price")

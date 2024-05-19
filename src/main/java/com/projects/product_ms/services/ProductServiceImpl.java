@@ -17,7 +17,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository  productRepository;
     private final CategoryService categoryService;
     private final WebClient webClient;
-    private final String BASE_URL = "http://localhost:8081/orders";
+    private final String BASE_URL = "http://localhost:8082/orders";
 
     @Autowired
     public ProductServiceImpl(ProductRepository productRepository, CategoryService categoryService, WebClient webClient) {
