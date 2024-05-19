@@ -1,6 +1,7 @@
 package com.projects.product_ms.controllers;
 
 import com.projects.product_ms.components.AuthUtils;
+import com.projects.product_ms.dtos.Response;
 import com.projects.product_ms.dtos.ResponseStatus;
 import com.projects.product_ms.dtos.product.*;
 import com.projects.product_ms.models.Product;
@@ -29,36 +30,38 @@ public class ProductController {
     }
 
     @GetMapping
-    public ProductsResponseDTO getProducts() {
-        ProductsResponseDTO responseDTO = new ProductsResponseDTO();
-        responseDTO.setProducts(this.productService.getAllProducts());
-        responseDTO.setResponseStatus(ResponseStatus.SUCCESS);
-        return responseDTO;
+    public ResponseEntity<Response> getProducts(@RequestHeader("Auth") String token) {
+        Response response = authenticateUser(token);
+        if(response.getResponseStatus().equals(ResponseStatus.FAILURE)) {
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        }
+        response.setBody(this.productService.getAllProducts());
+        response.setMessage("Retrieved All Products");
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ProductResponseDTO getProductById(@PathVariable("id") long id) {
-        ProductResponseDTO responseDTO = new ProductResponseDTO();
+    public ResponseEntity<Response> getProductById(@PathVariable("id") long id, @RequestHeader("Auth") String token) {
+        Response response = authenticateUser(token);
+        if(response.getResponseStatus().equals(ResponseStatus.FAILURE)) {
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        }
         try {
             Product product = this.productService.getProductById(id);
-            responseDTO.setProduct(product);
-            responseDTO.setResponseStatus(ResponseStatus.SUCCESS);
+            response.setBody(product);
+            response.setMessage("Retrieved Product with ID: " + id);
         } catch (Exception e) {
-            responseDTO.setMessage(e.getMessage());
-            responseDTO.setResponseStatus(ResponseStatus.FAILURE);
+            response.setMessage(e.getMessage());
+            response.setResponseStatus(ResponseStatus.FAILURE);
         }
-        return responseDTO;
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<Product> createProduct(@RequestBody CreateProductRequestDTO requestDTO, @RequestHeader("Auth") String token) {
-        try {
-            if(!authUtils.validateToken(token)) {
-                return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
-            }
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+    public ResponseEntity<Response> createProduct(@RequestBody CreateProductRequestDTO requestDTO, @RequestHeader("Auth") String token) {
+        Response response = authenticateUser(token);
+        if(response.getResponseStatus().equals(ResponseStatus.FAILURE)) {
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         }
         Product product = this.productService.createProduct(
                 requestDTO.getTitle(),
@@ -68,89 +71,122 @@ public class ProductController {
                 requestDTO.getCategoryName(),
                 requestDTO.getAvailableQuantity()
         );
-        return new ResponseEntity<>(product, HttpStatus.CREATED);
+        response.setBody(product);
+        response.setMessage("Product Created");
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @PatchMapping("/{id}/price")
-    public UpdatePriceResponseDTO updatePrice(@PathVariable("id") long productId, @RequestBody UpdatePriceRequestDTO requestDTO) {
+    public ResponseEntity<Response> updatePrice(@PathVariable("id") long productId, @RequestBody UpdatePriceRequestDTO requestDTO, @RequestHeader("Auth") String token) {
+        Response response = authenticateUser(token);
+        if(response.getResponseStatus().equals(ResponseStatus.FAILURE)) {
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        }
         double price = requestDTO.getPrice();
-        UpdatePriceResponseDTO responseDTO = new UpdatePriceResponseDTO();
         try {
             Product product = this.productService.updatePrice(productId, price);
-            responseDTO.setProduct(product);
-            responseDTO.setMessage("Price of product with ID: " + productId + ", has been UPDATED");
-            responseDTO.setResponseStatus(ResponseStatus.SUCCESS);
+            response.setBody(product);
+            response.setMessage("Price of product with ID: " + productId + ", has been UPDATED");
         } catch (Exception e) {
-            responseDTO.setMessage(e.getMessage());
-            responseDTO.setResponseStatus(ResponseStatus.FAILURE);
+            response.setMessage(e.getMessage());
+            response.setResponseStatus(ResponseStatus.FAILURE);
         }
-        return responseDTO;
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PatchMapping("/{id}/image")
-    public UpdateImageResponseDTO updateImage(@PathVariable("id") long productId, @RequestBody UpdateImageRequestDTO requestDTO) {
+    public ResponseEntity<Response> updateImage(@PathVariable("id") long productId, @RequestBody UpdateImageRequestDTO requestDTO, @RequestHeader("Auth") String token) {
+        Response response = authenticateUser(token);
+        if(response.getResponseStatus().equals(ResponseStatus.FAILURE)) {
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        }
         String imageUrl = requestDTO.getImage();
-        UpdateImageResponseDTO responseDTO = new UpdateImageResponseDTO();
         try {
             Product product = this.productService.updateImage(productId, imageUrl);
-            responseDTO.setProduct(product);
-            responseDTO.setMessage("Image of product with ID: " + productId + ", has been UPDATED");
-            responseDTO.setResponseStatus(ResponseStatus.SUCCESS);
+            response.setBody(product);
+            response.setMessage("Image of product with ID: " + productId + ", has been UPDATED");
         } catch (Exception e) {
-            responseDTO.setMessage(e.getMessage());
-            responseDTO.setResponseStatus(ResponseStatus.FAILURE);
+            response.setMessage(e.getMessage());
+            response.setResponseStatus(ResponseStatus.FAILURE);
         }
-        return responseDTO;
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PatchMapping("/{id}/available_quantity")
-    public UpdateQuantityResponseDTO updateAvailableQuantity(@PathVariable("id") long productId, @RequestBody UpdateQuantityRequestDTO requestDTO) {
+    public ResponseEntity<Response> updateAvailableQuantity(@PathVariable("id") long productId, @RequestBody UpdateQuantityRequestDTO requestDTO, @RequestHeader("Auth") String token) {
+        Response response = authenticateUser(token);
+        if(response.getResponseStatus().equals(ResponseStatus.FAILURE)) {
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        }
         int quantity = requestDTO.getQuantity();
-        UpdateQuantityResponseDTO responseDTO = new UpdateQuantityResponseDTO();
         try {
             Product product = this.productService.updateAvailableQuantity(productId, quantity);
-            responseDTO.setProduct(product);
-            responseDTO.setMessage("Quantity of product with ID: " + productId + ", has been UPDATED");
-            responseDTO.setResponseStatus(ResponseStatus.SUCCESS);
+            response.setBody(product);
+            response.setMessage("Quantity of product with ID: " + productId + ", has been UPDATED");
         } catch (Exception e) {
-            responseDTO.setMessage(e.getMessage());
-            responseDTO.setResponseStatus(ResponseStatus.FAILURE);
+            response.setMessage(e.getMessage());
+            response.setResponseStatus(ResponseStatus.FAILURE);
         }
-        return responseDTO;
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public DeleteProductResponseDTO deleteProduct(@PathVariable("id") long productId) {
-        DeleteProductResponseDTO responseDTO = new DeleteProductResponseDTO();
+    public ResponseEntity<Response> deleteProduct(@PathVariable("id") long productId, @RequestHeader("Auth") String token) {
+        Response response = authenticateUser(token);
+        if(response.getResponseStatus().equals(ResponseStatus.FAILURE)) {
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        }
         try {
             this.productService.deleteProduct(productId);
-            responseDTO.setMessage("Product with ID: " + productId + " has been deleted");
-            responseDTO.setResponseStatus(ResponseStatus.SUCCESS);
+            response.setMessage("Product with ID: " + productId + " has been deleted");
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            responseDTO.setMessage(e.getMessage());
-            responseDTO.setResponseStatus(ResponseStatus.FAILURE);
+            response.setMessage(e.getMessage());
+            response.setResponseStatus(ResponseStatus.FAILURE);
         }
-        return responseDTO;
+        return new ResponseEntity<>(response, HttpStatus.NO_CONTENT);
     }
 
     @PostMapping("/details")
-    public List<Product> getProductsById(@RequestBody GetProductsByIdRequestDTO requestDTO) {
-        List<Long> productIds = requestDTO.getProductIds();
-        System.out.println(productIds);
-        List<Product> products = new ArrayList<>();
-        try {
-            products = this.productService.getProductsById(productIds);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+    public ResponseEntity<Response> getProductsById(@RequestBody GetProductsByIdRequestDTO requestDTO, @RequestHeader("Auth") String token) {
+        Response response = authenticateUser(token);
+        if(response.getResponseStatus().equals(ResponseStatus.FAILURE)) {
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         }
-        return products;
+        List<Long> productIds = requestDTO.getProductIds();
+        try {
+            List<Product> products = this.productService.getProductsById(productIds);
+            response.setBody(products);
+        } catch (Exception e) {
+            response.setMessage(e.getMessage());
+            response.setResponseStatus(ResponseStatus.FAILURE);
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/trending")
-    public List<Product> getTrendingProducts() {
-        return this.productService.getTrendingProducts();
+    public ResponseEntity<Response> getTrendingProducts(@RequestHeader("Auth") String token) {
+        Response response = authenticateUser(token);
+        if(response.getResponseStatus().equals(ResponseStatus.FAILURE)) {
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        }
+        List<Product> trendingProducts = this.productService.getTrendingProducts();
+        response.setBody(trendingProducts);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    private Response authenticateUser(String token) {
+        Response response = new Response();
+        response.setResponseStatus(ResponseStatus.SUCCESS);
+        try {
+            if(!authUtils.validateToken(token)) {
+                response.setMessage("Invalid Token");
+                response.setResponseStatus(ResponseStatus.FAILURE);
+            }
+        } catch (Exception e) {
+            response.setMessage(e.getMessage());
+            response.setResponseStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+    }
 
 }
