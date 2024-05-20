@@ -1,6 +1,7 @@
 package com.projects.product_ms.controllers;
 
 import com.projects.product_ms.components.AuthUtils;
+import com.projects.product_ms.dtos.ListResponse;
 import com.projects.product_ms.dtos.Response;
 import com.projects.product_ms.dtos.ResponseStatus;
 import com.projects.product_ms.dtos.product.*;
@@ -8,12 +9,10 @@ import com.projects.product_ms.models.Product;
 import com.projects.product_ms.services.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -147,15 +146,26 @@ public class ProductController {
     }
 
     @PostMapping("/details")
-    public ResponseEntity<Response> getProductsById(@RequestBody GetProductsByIdRequestDTO requestDTO, @RequestHeader("Auth") String token) {
-        Response response = authenticateUser(token);
+    public ResponseEntity<ListResponse> getProductsById(@RequestBody GetProductsByIdRequestDTO requestDTO, @RequestHeader("Auth") String token) {
+        ListResponse response = new ListResponse();
+        response.setResponseStatus(ResponseStatus.SUCCESS);
+        try {
+            if(!authUtils.validateToken(token)) {
+                response.setMessage("Invalid Token");
+                response.setResponseStatus(ResponseStatus.FAILURE);
+            }
+        } catch (Exception e) {
+            response.setMessage(e.getMessage());
+            response.setResponseStatus(ResponseStatus.FAILURE);
+        }
         if(response.getResponseStatus().equals(ResponseStatus.FAILURE)) {
             return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         }
         List<Long> productIds = requestDTO.getProductIds();
         try {
             List<Product> products = this.productService.getProductsById(productIds);
-            response.setBody(products);
+            response.setProducts(products);
+            response.setResponseStatus(ResponseStatus.SUCCESS);
         } catch (Exception e) {
             response.setMessage(e.getMessage());
             response.setResponseStatus(ResponseStatus.FAILURE);

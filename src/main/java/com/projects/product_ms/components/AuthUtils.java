@@ -27,7 +27,7 @@ public class AuthUtils {
         HttpEntity<String> entity = new HttpEntity<>(body.toString(), headers);
         try {
             ResponseEntity<Token> response = this.restTemplate.exchange(BASE_URL + "/validate-token", HttpMethod.POST, entity, Token.class);
-            return response.getStatusCode() == HttpStatus.OK;
+            return response.getStatusCode().equals(HttpStatus.OK);
         } catch (Exception e) {
             return false;
         }
