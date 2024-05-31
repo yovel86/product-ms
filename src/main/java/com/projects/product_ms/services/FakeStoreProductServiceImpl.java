@@ -37,7 +37,7 @@ public class FakeStoreProductServiceImpl implements ProductService {
     }
 
     @Override
-    public PagedResult<Product> getAllProducts(int pageSize, int pageNo) {
+    public PagedResult<Product> getAllProducts(int pageSize, int pageNo, String[] sortBy) {
         FakeStoreProductDTO[] productDTOS = this.webClient
                                                 .get()
                                                 .uri(BASE_URL)

@@ -38,11 +38,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public PagedResult<Product> getAllProducts(int pageSize, int pageNo) {
+    public PagedResult<Product> getAllProducts(int pageSize, int pageNo, String[] sortParams) {
         pageNo = pageNo <= 1 ? 0 : pageNo - 1; // pages - 0 based index
         pageSize = Math.min(pageSize, 20);
-        Sort sortByTitle = Sort.by("title").ascending();
-        Pageable pageable = PageRequest.of(pageNo, pageSize, sortByTitle);
+        Sort sort = buildSortFromParams(sortParams);
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
         Page<Product> productPage = this.productRepository.findAll(pageable);
         return new PagedResult<>(
                 productPage.getContent(),
@@ -121,6 +121,25 @@ public class ProductServiceImpl implements ProductService {
                 .bodyToFlux(Long.class)
                 .collectList()
                 .block();
+    }
+
+    private Sort buildSortFromParams(String[] params) {
+        Sort sort = Sort.by(Sort.Order.asc("id"));
+        if(params != null && params.length > 0) {
+            Sort.Order[] orders = new Sort.Order[params.length];
+            for(int i = 0; i < params.length; i++) {
+                String[] split = params[i].split(":");
+                String field = split[0];
+                String direction = split[1];
+                if(direction.equalsIgnoreCase("desc")) {
+                    orders[i] = Sort.Order.desc(field);
+                } else {
+                    orders[i] = Sort.Order.asc(field);
+                }
+            }
+            sort = Sort.by(orders);
+        }
+        return sort;
     }
 
 }

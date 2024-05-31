@@ -32,12 +32,13 @@ public class ProductController {
     public ResponseEntity<Response> getProducts(
             @RequestHeader("Auth") String token,
             @RequestParam(name = "pageSize", defaultValue = "10") int pageSize,
-            @RequestParam(name = "pageNo", defaultValue = "1") int pageNo) {
+            @RequestParam(name = "pageNo", defaultValue = "1") int pageNo,
+            @RequestParam(name = "sortBy", defaultValue = "id:asc") String[] sortBy) {
         Response response = authenticateUser(token);
         if(response.getResponseStatus().equals(ResponseStatus.FAILURE)) {
             return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         }
-        response.setBody(this.productService.getAllProducts(pageSize, pageNo));
+        response.setBody(this.productService.getAllProducts(pageSize, pageNo, sortBy));
         response.setMessage("Retrieved All Products");
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

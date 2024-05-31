@@ -13,7 +13,7 @@ public interface ProductService {
 
     Product getProductById(long productId) throws ProductNotFoundException;
 
-    PagedResult<Product> getAllProducts(int pageSize, int pageNo);
+    PagedResult<Product> getAllProducts(int pageSize, int pageNo, String[] sortBy);
 
     Product createProduct(String title, String description, double price, String image, String categoryName, int availableQuantity);
 
