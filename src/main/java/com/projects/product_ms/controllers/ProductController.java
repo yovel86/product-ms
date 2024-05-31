@@ -19,22 +19,25 @@ import java.util.List;
 @RequestMapping("/products")
 public class ProductController {
 
-    private final ProductService productService;
     private final AuthUtils authUtils;
+    private final ProductService productService;
 
     @Autowired
-    public ProductController(@Qualifier("productService") ProductService productService, AuthUtils authUtils) {
-        this.productService = productService;
+    public ProductController(AuthUtils authUtils, @Qualifier("productService") ProductService productService) {
         this.authUtils = authUtils;
+        this.productService = productService;
     }
 
     @GetMapping
-    public ResponseEntity<Response> getProducts(@RequestHeader("Auth") String token) {
+    public ResponseEntity<Response> getProducts(
+            @RequestHeader("Auth") String token,
+            @RequestParam(name = "pageSize", defaultValue = "10") int pageSize,
+            @RequestParam(name = "pageNo", defaultValue = "1") int pageNo) {
         Response response = authenticateUser(token);
         if(response.getResponseStatus().equals(ResponseStatus.FAILURE)) {
             return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         }
-        response.setBody(this.productService.getAllProducts());
+        response.setBody(this.productService.getAllProducts(pageSize, pageNo));
         response.setMessage("Retrieved All Products");
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -197,6 +200,11 @@ public class ProductController {
             response.setResponseStatus(ResponseStatus.FAILURE);
         }
         return response;
+    }
+
+    @GetMapping("/health")
+    public ResponseEntity<String> healthCheck() {
+        return ResponseEntity.ok("Produce service is running properly...");
     }
 
 }

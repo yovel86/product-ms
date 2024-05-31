@@ -1,7 +1,10 @@
 package com.projects.product_ms.services;
 
+import com.projects.product_ms.dtos.PagedResult;
 import com.projects.product_ms.exceptions.ProductNotFoundException;
 import com.projects.product_ms.models.Product;
+import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 
 import javax.swing.*;
 import java.util.List;
@@ -10,7 +13,7 @@ public interface ProductService {
 
     Product getProductById(long productId) throws ProductNotFoundException;
 
-    List<Product> getAllProducts();
+    PagedResult<Product> getAllProducts(int pageSize, int pageNo);
 
     Product createProduct(String title, String description, double price, String image, String categoryName, int availableQuantity);
 

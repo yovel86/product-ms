@@ -1,10 +1,16 @@
 package com.projects.product_ms.services;
 
+import com.projects.product_ms.dtos.PagedResult;
 import com.projects.product_ms.exceptions.ProductNotFoundException;
 import com.projects.product_ms.models.Category;
 import com.projects.product_ms.models.Product;
 import com.projects.product_ms.repositories.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -32,8 +38,22 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<Product> getAllProducts() {
-        return this.productRepository.findAll();
+    public PagedResult<Product> getAllProducts(int pageSize, int pageNo) {
+        pageNo = pageNo <= 1 ? 0 : pageNo - 1; // pages - 0 based index
+        pageSize = Math.min(pageSize, 20);
+        Sort sortByTitle = Sort.by("title").ascending();
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sortByTitle);
+        Page<Product> productPage = this.productRepository.findAll(pageable);
+        return new PagedResult<>(
+                productPage.getContent(),
+                productPage.getTotalElements(),
+                productPage.getNumber() + 1,
+                productPage.getTotalPages(),
+                productPage.isFirst(),
+                productPage.isLast(),
+                productPage.hasNext(),
+                productPage.hasPrevious()
+        );
     }
 
     @Override

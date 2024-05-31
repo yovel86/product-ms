@@ -1,10 +1,13 @@
 package com.projects.product_ms.services;
 
+import com.projects.product_ms.dtos.PagedResult;
 import com.projects.product_ms.dtos.product.FakeStoreProductDTO;
 import com.projects.product_ms.exceptions.ProductNotFoundException;
 import com.projects.product_ms.models.Product;
 import com.projects.product_ms.utils.ProductUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -34,7 +37,7 @@ public class FakeStoreProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<Product> getAllProducts() {
+    public PagedResult<Product> getAllProducts(int pageSize, int pageNo) {
         FakeStoreProductDTO[] productDTOS = this.webClient
                                                 .get()
                                                 .uri(BASE_URL)
@@ -44,7 +47,7 @@ public class FakeStoreProductServiceImpl implements ProductService {
         for(FakeStoreProductDTO dto: productDTOS) {
             products.add(ProductUtils.convertDtoToProduct(dto));
         }
-        return products;
+        return null;
     }
 
     @Override
