@@ -53,11 +53,12 @@ public class ProductController {
             Product product = this.productService.getProductById(id);
             response.setBody(product);
             response.setMessage("Retrieved Product with ID: " + id);
+            return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             response.setMessage(e.getMessage());
             response.setResponseStatus(ResponseStatus.FAILURE);
+            return  new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping

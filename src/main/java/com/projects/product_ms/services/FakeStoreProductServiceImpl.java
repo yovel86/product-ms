@@ -7,6 +7,7 @@ import com.projects.product_ms.models.Product;
 import com.projects.product_ms.utils.ProductUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -18,22 +19,28 @@ import java.util.List;
 public class FakeStoreProductServiceImpl implements ProductService {
 
     private final WebClient webClient;
+    private final RedisTemplate<String, Object> redisTemplate;
     private final String BASE_URL = "https://fakestoreapi.com/products";
 
     @Autowired
-    public FakeStoreProductServiceImpl(WebClient webClient) {
+    public FakeStoreProductServiceImpl(WebClient webClient, RedisTemplate<String, Object> redisTemplate) {
         this.webClient = webClient;
+        this.redisTemplate = redisTemplate;
     }
 
     @Override
     public Product getProductById(long productId) throws ProductNotFoundException {
+        Product cachedProduct = (Product) this.redisTemplate.opsForHash().get("PRODUCTS", "products_" + productId);
+        if(cachedProduct != null) return cachedProduct;
         FakeStoreProductDTO productDTO = this.webClient
                                              .get()
                                              .uri(BASE_URL + "/" + productId)
                                              .retrieve()
                                              .bodyToMono(FakeStoreProductDTO.class).block();
         if(productDTO == null) throw new ProductNotFoundException("Invalid Product ID");
-        return ProductUtils.convertDtoToProduct(productDTO);
+        Product product = ProductUtils.convertDtoToProduct(productDTO);
+        this.redisTemplate.opsForHash().put("PRODUCTS", "products_" + productId, product);
+        return product;
     }
 
     @Override
