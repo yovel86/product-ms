@@ -12,7 +12,8 @@ public class AuthUtils {
 
     private final RestTemplate restTemplate;
 //    private final String BASE_URL = "http://ecom-user-service-dev.ap-south-1.elasticbeanstalk.com/users";
-    private final String BASE_URL = "http://localhost:8080/users";
+//    private final String BASE_URL = "http://localhost:8080/users";
+    private final String BASE_URL = "http://User-Service/users";
 
     @Autowired
     public AuthUtils(RestTemplate restTemplate) {
